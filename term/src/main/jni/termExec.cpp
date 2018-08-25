@@ -34,6 +34,7 @@
 
 #define LOG_TAG "Exec"
 
+#include <string.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
 #include <sys/wait.h>

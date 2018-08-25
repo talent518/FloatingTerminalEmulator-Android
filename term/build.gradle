@@ -53,6 +53,11 @@ def getNdkDir() {
 
 def getNdkBuildCmd() {
     def ndkbuild = getNdkDir() + "/ndk-build"
-//    ndkbuild += ".cmd"
+    if (isWindows())
+        ndkbuild += ".cmd"
     return ndkbuild
+}
+
+def isWindows() {
+    return org.gradle.internal.os.OperatingSystem.current().isWindows()
 }

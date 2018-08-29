@@ -316,9 +316,14 @@ public class Term extends Activity implements UpdateCallback {
 
     private Handler mHandler = new Handler();
 
+    public static Context context;
+
     @Override
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
+
+        context = this;
+
         Log.e(TermDebug.LOG_TAG, "onCreate");
         mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         mSettings = new TermSettings(getResources(), mPrefs);
@@ -483,6 +488,7 @@ public class Term extends Activity implements UpdateCallback {
         if (mWifiLock.isHeld()) {
             mWifiLock.release();
         }
+        context = null;
     }
 
     private void restart() {

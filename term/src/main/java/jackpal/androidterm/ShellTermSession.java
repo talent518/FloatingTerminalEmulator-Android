@@ -21,9 +21,11 @@ import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -33,6 +35,7 @@ import jackpal.androidterm.emulatorview.TermSession;
 import jackpal.androidterm.emulatorview.UpdateCallback;
 
 import jackpal.androidterm.compat.FileCompat;
+import jackpal.androidterm.util.FileUtils;
 import jackpal.androidterm.util.TermSettings;
 
 /**
@@ -127,16 +130,29 @@ public class ShellTermSession extends TermSession {
         if (settings.verifyPath()) {
             path = checkPath(path);
         }
-        String[] env = new String[3];
+
+        try {
+            FileUtils.copyAssetDirToFiles(Term.context, "bin");
+            FileUtils.copyAssetDirToFiles(Term.context, "ssl");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        String basePath = Term.context.getFilesDir().getAbsolutePath();
+
+        String[] env = new String[4];
         env[0] = "TERM=" + settings.getTermType();
-        env[1] = "PATH=" + path;
+        env[1] = "PATH=" + basePath + "/bin:" + basePath + "/xbin:" + path;
         env[2] = "HOME=" + settings.getHomePath();
+        env[3] = "OPENSSL_CONF=" + basePath + "/ssl/openssl.cnf";
 
         createSubprocess(processId, settings.getShell(), env);
         mProcId = processId[0];
 
         setTermOut(new FileOutputStream(mTermFd));
         setTermIn(new FileInputStream(mTermFd));
+
+        write("alias ll='ls -alF'\nalias l='ls -lF'\nchmod +x " + basePath + "/bin/*\nmkdir -p " + basePath + "/xbin\nbusybox --install -s " + basePath + "/xbin\nclear\n");
     }
 
     private String checkPath(String path) {
